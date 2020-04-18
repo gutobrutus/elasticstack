@@ -17,7 +17,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
   config.vm.box_check_update = false
   config.vm.hostname = "srvclusterelk-local"
-  config.vm.network "private_network", ip: "192.168.100.10"
+  config.vm.network "private_network", ip: "192.168.99.10"
   config.vm.network :forwarded_port, guest: 5601, host: 5601
   config.vm.network :forwarded_port, guest: 9200, host: 9200
   config.vm.network :forwarded_port, guest: 9300, host: 9300
