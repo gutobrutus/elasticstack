@@ -22,8 +22,6 @@ Vagrant.configure("2") do |config|
   config.vm.network :forwarded_port, guest: 9200, host: 9200
   config.vm.network :forwarded_port, guest: 9300, host: 9300
   config.vm.provision "shell", inline: $script
-  config.vm.synced_folder "../", "/centos7-elk", owner: "vagrant",
-    group: "vagrant", mount_options: ["uid=1000", "gid=1000"]
 
   config.vm.provider "virtualbox" do |vb|
     vb.gui = false
@@ -31,4 +29,4 @@ Vagrant.configure("2") do |config|
     vb.memory = "4096"
     vb.cpus = "2"
   end
-end 
+end
