@@ -2,10 +2,12 @@
 Repositório do projeto de implantação de um Stack básica do Elasticsearch em cluster, utilizando docker.
 
 ## 1 - Considerações iniciais
-Este projeto visa a implantação de uma stack básica do Elasticsearch, utilizando um VM a ser provisionada pelo Vangrant no VirtualBox.
+Este projeto visa a implantação de uma stack básica do Elasticsearch, utilizando uma VM a ser provisionada pelo Vangrant no VirtualBox.
 Essa VM tem a configuração de 4GB de RAM e 2 vCPUs. Favor observar se a máquina host que será implantada tem capacidade necessária.
 
 O cluster é composto por 03 nodes Elasticsearch + 01 node do Kibana.
+
+**Observação**: Em ambientes de produção não é recomendado ter outro elemento da stack, ou seja, o adequado era executar o Kibana em outro host. Portanto, o ideal, era o host subir apenas o cluster com o Elasticsearh em docker.
 
 Essa configuração é básica, podendo ser aplicada uma configuração superior, principalmente em ambientes de produção.
 
@@ -50,7 +52,9 @@ O Vagrantfile que está no diretório raiz, provisiona uma VM com as seguintes t
 Os itens instalados são fundamentais para rodar a stack Elasticsearch via docker na VM.
 
 ### 2.2 - Observação importante para ambientes de produção
-**a)** De acordo com a documentação oficial do Elastic search, em ambientes de produção é necessário realizar um ajuste em um parâmetro de kernel (vm.max_map_count). Esse parâmetro define o número máximo de áreas de mapas de memória que um processo pode ter. O Elastic necessita de um valor de 262144, conforme sua documentação.
+**a) Configurando o `vm.max_map_count`**
+
+De acordo com a documentação oficial do Elasticsearch, em ambientes de produção é necessário realizar um ajuste em um parâmetro de kernel (vm.max_map_count). Esse parâmetro define o número máximo de áreas de mapas de memória que um processo pode ter. O Elastic necessita de um valor de 262144, conforme sua documentação.
 
 Como estamos rodando a VM com um CentOS, devemos acessá-la e ajustar esse valor:
 
@@ -66,7 +70,10 @@ vm.max_map_count = 65530
 ```shell
 $ sudo sysctl -w vm.max_map_count=262144
 ```
-**b)** Congigurando o Heap Size
+**Observação**: Com o último comando, a alteração não é de forma definitiva no CentOS 7, ou seja, se reiniciar a VM, terá novamente que executar o comando acima. Para que a alterção seja permanente, adicione um arquivo `sysctl-elk.conf` no diretório `/etc/sysctl.d/` com o conteúdo `vm.max_map_count=262144`. Se esta configuração não estiver efetiva, o cluster não sobe.
+
+**b) Configurando o Heap Size**:
+
 O Elasticsearch, por padrão, diz à JVM para usar um heap com um tamanho mínimo e máximo de 1 GB. Quando for implantar em ambiente de produção, é importante configurar o tamanho do heap para garantir que o Elasticsearch possua heap suficiente para trabalhar.
 
 O Elasticsearch utilizará a configuração de heap especificado no arquivo jvm.options (Xms e Xmx). Deve-se definir essas duas configurações para serem iguais. Entretanto, ao executar o Elastic via docker, não é recomendado alterar esse arquivo, mas sim especificar via variáveis de ambiente, conforme próximo parágrafo.
@@ -80,9 +87,9 @@ Dessa forma, as configurações que estão no arquivo jvm.options, são sobrescr
 **Atenção:** Deve-se configurar o Xmx e Xms de modo a **não ultrapassar 50% do total de memória RAM física disponível no computador** que irá executar os containers da stack. Isso deve-se ao fato do Elasticsearch utilizar memória para outros fins que não apenas o que está definido na heap. É necessário considerar nesse cálculo a quantidade de nós do Elastic no cluster.
 
 ## 3 - Subindo o cluster Elasticsearch + Kibana
-Após a VM ter sido provisionada e estar UP, relizada as configurações anteriores, agora basta subir a stack configurada no docker-compose.yml.
+Após a VM ter sido provisionada e estar UP, realizada as configurações anteriores, agora basta subir a stack configurada no docker-compose.yml.
 
-Depois de ter acessado a VM com **vagrant ssh**, acesse o diretório mapeado por padrão entre a VM e o seu computador:
+Depois de ter acessado a VM com `vagrant ssh`, acesse o diretório mapeado por padrão entre a VM e o seu computador:
 ```shell
 [vagrant@srvclusterelk-local ~]$ cd /vagrant
 ```
